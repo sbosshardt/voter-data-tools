@@ -1,4 +1,4 @@
-const handleCommand = require("./src/cli");
+const handleCommand = require('./src/cli')
 
 // Pass the command-line arguments to the CLI handler
-handleCommand(process.argv);
+handleCommand(process.argv)
