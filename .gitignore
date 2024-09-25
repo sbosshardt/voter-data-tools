@@ -30,8 +30,7 @@ dist/
 build/
 
 # Input data and generated data (voter data CSV files)
-data/output_sample.csv
-data/voter_registration.csv
+data/*
 
 # Temporary files
 *.tmp
