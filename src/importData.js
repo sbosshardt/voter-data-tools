@@ -1,28 +1,26 @@
 const path = require('path')
 const loadConfig = require('./loadConfig')
 
-async function importPrecinctDistrictsCsv() {
-  console.log(
-    'Precinct Districts CSV import functionality is under construction.',
-  )
-}
-
-async function importVotersCsv() {
-  console.log('Voters CSV import functionality is under construction.')
-  config = await loadConfig().catch((err) =>
+async function importCsv(table, filePath = null) {
+  const config = await loadConfig().catch((err) =>
     console.error('Error in loadConfig:', err),
   )
   console.log('Loaded configuration: ', JSON.stringify(config, null, 2))
-  const votersMapping = config.csvMappings.voters.columns
-  console.log('Voters mappings:', votersMapping)
+  const mappings = config.csvMappings[table].columns
+  console.log('Mappings:', mappings)
+  const filename = filePath || config.csvMappings[table].csvFilePath
 }
 
-async function importConfigCsv() {
-  console.log('Configuration CSV import functionality is under construction.')
+async function importPrecinctDistrictsCsv() {
+  importCsv('precincts')
+}
+
+async function importVotersCsv() {
+  importCsv('voters')
 }
 
 module.exports = {
+  importCsv,
   importPrecinctDistrictsCsv,
   importVotersCsv,
-  importConfigCsv,
 }

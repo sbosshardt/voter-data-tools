@@ -21,7 +21,6 @@ function showHelp() {
     init-db [dbfile]     Initialize the database (optional dbfile parameter).
     import-precincts     Import precinct districts CSV.
     import-voters        Import voters CSV.
-    import-config        Import configuration CSV.
     generate-groupings   Generate precinct groupings.
     generate-messages    Generate text messages.
     generate-recipients  Generate recipients lists.
@@ -53,10 +52,6 @@ async function handleCommand(args) {
 
     case 'import-voters':
       await importVotersCsv()
-      break
-
-    case 'import-config':
-      await importConfigCsv()
       break
 
     case 'generate-groupings':
