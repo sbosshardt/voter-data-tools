@@ -71,7 +71,21 @@ async function importCsv(table, filePath = null) {
     .on('data', (row) => {
       const mappedRow = {}
       for (const [sqliteCol, details] of Object.entries(mappings)) {
-        mappedRow[sqliteCol] = row[details.csv] // Use the mapping defined in the config
+        let value = row[details.csv]
+
+        // Handle case-insensitive "yes", "true", "no", "false" for INTEGER columns
+        if (details.type === 'INTEGER') {
+          value = value?.toLowerCase()
+          if (value === 'yes' || value === 'true') {
+            value = 1
+          } else if (value === 'no' || value === 'false') {
+            value = 0
+          } else {
+            value = parseInt(value, 10) || 0 // Convert to integer, default to 0 if invalid
+          }
+        }
+
+        mappedRow[sqliteCol] = value
       }
       csvData.push(mappedRow)
     })
@@ -138,8 +152,13 @@ async function importVotersCsv() {
   return await importCsv('voters')
 }
 
+async function importCandidatesCsv() {
+  return await importCsv('candidates')
+}
+
 module.exports = {
   importCsv,
+  importCandidatesCsv,
   importDistrictsCsv,
   importVotersCsv,
 }

@@ -49,6 +49,32 @@
           "type": "TEXT"
         }
       }
+    },
+    "candidates": {
+      "csvFilePath": "data/candidates.csv",
+      "delimiter": ",",
+      "columns": {
+        "name": {
+          "csv": "Name",
+          "type": "TEXT"
+        },
+        "office": {
+          "csv": "Office",
+          "type": "TEXT"
+        },
+        "district": {
+          "csv": "District",
+          "type": "TEXT"
+        },
+        "triggers_precinct": {
+          "csv": "Triggers Precinct",
+          "type": "INTEGER"
+        },
+        "unopposed": {
+          "csv": "Unopposed",
+          "type": "INTEGER"
+        }
+      }
     }
   }
 }
