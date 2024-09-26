@@ -43,7 +43,7 @@ async function handleCommand(args) {
       break
 
     case 'init-db':
-      const dbFile = args[3] || 'vdt.db' // Optional parameter for db file name
+      const dbFile = args[3] || null // Optional parameter for db file name
       await initializeDatabase(dbFile)
       break
 

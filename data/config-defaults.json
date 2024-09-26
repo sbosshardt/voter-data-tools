@@ -1,0 +1,26 @@
+{
+  "dbFile": "data/vdt.db",
+  "csvMappings": {
+    "voters": {
+      "csvFilePath": "data/voters.csv",
+      "tableName": "voters",
+      "columns": {
+        "VoterID": "voter_id",
+        "FirstName": "first_name",
+        "LastName": "last_name",
+        "DateOfBirth": "birth_date",
+        "Precinct": "precinct",
+        "Phone1": "phone_1",
+        "Phone2": "phone_2"
+      }
+    },
+    "districts": {
+      "csvFilePath": "data/precincts.csv",
+      "tableName": "districts",
+      "columns": {
+        "Precinct": "precinct",
+        "District": "default_consolidation_name"
+      }
+    }
+  }
+}

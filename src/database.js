@@ -1,14 +1,17 @@
 const sqlite3 = require('sqlite3').verbose()
 const path = require('path')
 const fs = require('fs')
+const loadConfig = require('./loadConfig')
 
 // Function to initialize the SQLite database
-async function initializeDatabase(dbFile = 'vdt.db') {
+async function initializeDatabase(dbFile = null) {
   let dbPath
+  config = await loadConfig()
 
-  if (dbFile === 'vdt.db') {
-    // Default behavior: create vdt.db in the data directory
-    dbPath = path.join(__dirname, '../data', dbFile)
+  if (dbFile === null) {
+    // Default config is to create vdt.db in the data directory.
+    dbPath = path.join(__dirname, '../' + config.dbFile)
+    console.log('dbPath is:', dbPath)
   } else if (path.isAbsolute(dbFile) || dbFile.includes(path.sep)) {
     // If an absolute or relative path is provided, resolve it
     dbPath = path.resolve(dbFile)

@@ -31,6 +31,7 @@ build/
 
 # Input data and generated data (voter data CSV files)
 data/*
+!data/config-defaults.json
 
 # Temporary files
 *.tmp
