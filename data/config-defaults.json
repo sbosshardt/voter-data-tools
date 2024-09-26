@@ -1,26 +1,51 @@
 {
-  "cfgVersion": 0,
+  "cfgVersion": 1,
   "dbFile": "data/vdt.db",
-  "csvMappings": {
+  "csv_mappings": {
     "voters": {
       "csvFilePath": "data/voters.csv",
-      "tableName": "voters",
       "columns": {
-        "VoterID": "voter_id",
-        "FirstName": "first_name",
-        "LastName": "last_name",
-        "DateOfBirth": "birth_date",
-        "Precinct": "precinct",
-        "Phone1": "phone_1",
-        "Phone2": "phone_2"
+        "voter_id": {
+          "csv": "voter_id",
+          "type": "INTEGER"
+        },
+        "first_name": {
+          "csv": "first_name",
+          "type": "TEXT"
+        },
+        "last_name": {
+          "csv": "last_name",
+          "type": "TEXT"
+        },
+        "birth_date": {
+          "sqlite": "birth_date",
+          "type": "TEXT"
+        },
+        "precinct": {
+          "sqlite": "precinct",
+          "type": "TEXT"
+        },
+        "phone_1": {
+          "csv": "phone_1",
+          "type": "TEXT"
+        },
+        "phone_2": {
+          "csv": "phone_2",
+          "type": "TEXT"
+        }
       }
     },
     "districts": {
-      "csvFilePath": "data/precincts.csv",
-      "tableName": "districts",
+      "csvFilePath": "data/districts.csv",
       "columns": {
-        "Precinct": "precinct",
-        "District": "default_consolidation_name"
+        "precinct": {
+          "csv": "precinct",
+          "type": "TEXT"
+        },
+        "district": {
+          "csv": "default_consolidation_name",
+          "type": "TEXT"
+        }
       }
     }
   }

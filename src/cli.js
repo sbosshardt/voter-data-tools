@@ -1,10 +1,6 @@
 const generateSampleCsv = require('./generateSampleCsv')
 const initializeDatabase = require('./database')
-const {
-  importPrecinctDistrictsCsv,
-  importVotersCsv,
-  importConfigCsv,
-} = require('./importData')
+const { importDistrictsCsv, importVotersCsv } = require('./importData')
 const {
   generatePrecinctGroupings,
   generateTextMessages,
@@ -19,7 +15,7 @@ function showHelp() {
   Commands:
     generate-sample      Generate a sample CSV file.
     init-db [dbfile]     Initialize the database (optional dbfile parameter).
-    import-precincts     Import precinct districts CSV.
+    import-districts     Import precinct districts CSV.
     import-voters        Import voters CSV.
     generate-groupings   Generate precinct groupings.
     generate-messages    Generate text messages.
@@ -46,8 +42,8 @@ async function handleCommand(args) {
       await initializeDatabase(dbFile)
       break
 
-    case 'import-precincts':
-      await importPrecinctDistrictsCsv()
+    case 'import-districts':
+      await importDistrictsCsv()
       break
 
     case 'import-voters':
