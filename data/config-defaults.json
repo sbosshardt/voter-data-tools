@@ -4,25 +4,26 @@
   "csv_mappings": {
     "voters": {
       "csvFilePath": "data/voters.csv",
+      "delimiter": ",",
       "columns": {
         "voter_id": {
           "csv": "voter_id",
           "type": "INTEGER"
         },
         "first_name": {
-          "csv": "first_name",
+          "csv": "name_first",
           "type": "TEXT"
         },
         "last_name": {
-          "csv": "last_name",
+          "csv": "name_last",
           "type": "TEXT"
         },
         "birth_date": {
-          "sqlite": "birth_date",
+          "csv": "birth_date",
           "type": "TEXT"
         },
         "precinct": {
-          "sqlite": "precinct",
+          "csv": "precinct",
           "type": "TEXT"
         },
         "phone_1": {
@@ -37,13 +38,14 @@
     },
     "districts": {
       "csvFilePath": "data/districts.csv",
+      "delimiter": "\t",
       "columns": {
         "precinct": {
           "csv": "precinct",
           "type": "TEXT"
         },
         "district": {
-          "csv": "default_consolidation_name",
+          "csv": "name_1",
           "type": "TEXT"
         }
       }

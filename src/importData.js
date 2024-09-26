@@ -28,6 +28,7 @@ async function importCsv(table, filePath = null) {
   const tableConfig = config.csv_mappings[table]
   const mappings = tableConfig.columns
   const filename = filePath || tableConfig.csvFilePath
+  const delimiter = tableConfig.delimiter || ',' // Default to comma if not specified
 
   // Open the SQLite database
   const dbPath = config.dbFile || 'vdt.db'
@@ -63,14 +64,14 @@ async function importCsv(table, filePath = null) {
     })
   })
 
-  // Step 2: Read the CSV file and collect data
+  // Read the CSV file using the specified delimiter
   const csvData = []
   fs.createReadStream(filename)
-    .pipe(csvParser())
+    .pipe(csvParser({ separator: delimiter })) // Use the specified delimiter
     .on('data', (row) => {
       const mappedRow = {}
       for (const [sqliteCol, details] of Object.entries(mappings)) {
-        mappedRow[sqliteCol] = row[details.csv]
+        mappedRow[sqliteCol] = row[details.csv] // Use the mapping defined in the config
       }
       csvData.push(mappedRow)
     })
