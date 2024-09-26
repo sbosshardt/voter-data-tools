@@ -1,4 +1,5 @@
 {
+  "cfgVersion": 0,
   "dbFile": "data/vdt.db",
   "csvMappings": {
     "voters": {

@@ -35,6 +35,14 @@ async function loadConfigFiles(defaultConfigPath, userConfigPath) {
 
     const userConfig = JSON.parse(await fs.readFile(userConfigPath, 'utf-8'))
 
+    if (defaultConfig.cfgVersion !== userConfig.cfgVersion) {
+      console.log('Version mismatch for defaultConfig and userConfig!')
+      console.log(
+        'Please either delete your config.json file or update its structure and cfgVersion to be compatable with config-defaults.json.',
+      )
+      return null
+    }
+
     // Merge user config into default config (user config takes precedence)
     const finalConfig = deepMerge(defaultConfig, userConfig)
 
