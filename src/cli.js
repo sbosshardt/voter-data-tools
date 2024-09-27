@@ -6,6 +6,8 @@ const {
   importVotersCsv,
 } = require('./importData')
 const {
+  getTargetDistricts,
+  getTargetPrecincts,
   generatePrecinctGroupings,
   generateTextMessages,
   generateRecipientsLists,
@@ -22,6 +24,8 @@ function showHelp() {
     import-districts     Import precinct districts CSV.
     import-candidates    Import candidate endorsements CSV.
     import-voters        Import voters CSV.
+    target-districts     Get target districts (based on candidates table).
+    target-precincts     Generate the precincts to be targeted.
     generate-groupings   Generate precinct groupings.
     generate-messages    Generate text messages.
     generate-recipients  Generate recipients lists.
@@ -57,6 +61,16 @@ async function handleCommand(args) {
 
     case 'import-voters':
       await importVotersCsv()
+      break
+
+    case 'target-districts':
+      const districts = await getTargetDistricts()
+      console.log(districts)
+      break
+
+    case 'target-precincts':
+      const precincts = await getTargetPrecincts()
+      console.log(precincts)
       break
 
     case 'generate-groupings':
