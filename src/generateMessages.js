@@ -1,6 +1,51 @@
 const sqlite3 = require('sqlite3')
 const loadConfig = require('./loadConfig') // Assuming config is loaded if needed
 
+async function getPrecinctDistricts(precinct) {
+  const config = await loadConfig().catch((err) => {
+    console.error('Error in loadConfig:', err)
+    return
+  })
+
+  if (!config) {
+    console.error('Unable to load config.')
+    return []
+  }
+
+  const dbPath = config.dbFile || 'vdt.db'
+
+  return new Promise((resolve, reject) => {
+    const db = new sqlite3.Database(dbPath, (err) => {
+      if (err) {
+        console.error('Error opening database:', err.message)
+        return reject(err)
+      }
+    })
+
+    const query = `
+      SELECT DISTINCT district
+      FROM districts
+      WHERE precinct = ?
+      ORDER BY district ASC
+    `
+
+    db.all(query, [precinct], (err, rows) => {
+      if (err) {
+        console.error('Error querying database:', err.message)
+        reject(err)
+      } else {
+        const districts = rows.map((row) => row.district) // Extract districts into an array
+        resolve(districts)
+      }
+      db.close((err) => {
+        if (err) {
+          console.error('Error closing database:', err.message)
+        }
+      })
+    })
+  })
+}
+
 async function getTargetDistricts() {
   const config = await loadConfig().catch((err) => {
     console.error('Error in loadConfig:', err)
@@ -124,6 +169,7 @@ async function generateRecipientsLists() {
 }
 
 module.exports = {
+  getPrecinctDistricts,
   getTargetDistricts,
   getTargetPrecincts,
   generatePrecinctGroupings,
