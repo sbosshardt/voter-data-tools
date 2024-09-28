@@ -25,7 +25,7 @@ function showHelp() {
     import-voters        Import voters CSV.
     precinct-districts <precinct>   Get districts a precinct is a part of.
     target-districts     Get target districts (based on candidates table).
-    target-precincts     Generate the precincts to be targeted.
+    target-precincts     Get the precincts to be targeted.
     generate-groupings   Generate the target_precincts and target_groupings tables.
     generate-messages    Generate text messages.
     generate-recipients  Generate recipients lists.
