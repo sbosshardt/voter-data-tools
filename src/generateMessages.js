@@ -155,12 +155,6 @@ async function getTargetPrecincts() {
   }
 }
 
-async function generatePrecinctGroupings() {
-  console.log(
-    'Precinct groupings generation functionality is under construction.',
-  )
-}
-
 async function generateTextMessages() {
   console.log('Text message generation functionality is under construction.')
 }
@@ -175,7 +169,6 @@ module.exports = {
   getPrecinctDistricts,
   getTargetDistricts,
   getTargetPrecincts,
-  generatePrecinctGroupings,
   generateTextMessages,
   generateRecipientsLists,
 }

@@ -10,7 +10,6 @@ const {
   getPrecinctDistricts,
   getTargetDistricts,
   getTargetPrecincts,
-  generatePrecinctGroupings,
   generateTextMessages,
   generateRecipientsLists,
 } = require('./generateMessages')
@@ -23,14 +22,13 @@ function showHelp() {
   Commands:
     generate-sample      Generate a sample CSV file.
     init-db [dbfile]     Initialize the database (optional dbfile parameter).
-    init-precinct-groupings   Initialize the precincts and groupings tables.
     import-districts     Import precinct districts CSV.
     import-candidates    Import candidate endorsements CSV.
     import-voters        Import voters CSV.
     precinct-districts <precinct>   Get districts a precinct is a part of.
     target-districts     Get target districts (based on candidates table).
     target-precincts     Generate the precincts to be targeted.
-    generate-groupings   Generate precinct groupings.
+    generate-groupings   Generate the target_precincts and target_groupings tables.
     generate-messages    Generate text messages.
     generate-recipients  Generate recipients lists.
     
@@ -53,10 +51,6 @@ async function handleCommand(args) {
     case 'init-db':
       const dbFile = args[3] || null // Optional parameter for db file name
       await initializeDatabase(dbFile)
-      break
-
-    case 'init-precinct-groupings':
-      await initPrecinctsGroupingsTables()
       break
 
     case 'import-candidates':
@@ -92,7 +86,7 @@ async function handleCommand(args) {
       break
 
     case 'generate-groupings':
-      await generatePrecinctGroupings()
+      await initPrecinctsGroupingsTables()
       break
 
     case 'generate-messages':
