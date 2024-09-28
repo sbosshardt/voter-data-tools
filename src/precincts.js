@@ -1,47 +1,10 @@
 const sqlite3 = require('sqlite3')
-const {
-  getPrecinctDistricts,
-  getTargetDistricts,
-} = require('./generateMessages')
+const { runAsync, allAsync, getDbPath } = require('./database')
+const { getPrecinctDistricts, getTargetDistricts } = require('./districts')
 const { getGroupingHash } = require('./utils')
-const loadConfig = require('./loadConfig')
-
-// Helper function to run db.run() as a promise
-function runAsync(db, sql, params = []) {
-  return new Promise((resolve, reject) => {
-    db.run(sql, params, (err) => {
-      if (err) {
-        return reject(err)
-      }
-      resolve()
-    })
-  })
-}
-
-// Helper function to run db.all() as a promise
-function allAsync(db, sql, params = []) {
-  return new Promise((resolve, reject) => {
-    db.all(sql, params, (err, rows) => {
-      if (err) {
-        return reject(err)
-      }
-      resolve(rows)
-    })
-  })
-}
 
 async function initPrecinctsGroupingsTables() {
-  const config = await loadConfig().catch((err) => {
-    console.error('Error in loadConfig:', err)
-    return
-  })
-
-  if (!config) {
-    console.error('Unable to load config.')
-    return
-  }
-
-  const dbPath = config.dbFile || 'vdt.db'
+  const dbPath = await getDbPath()
 
   return new Promise((resolve, reject) => {
     const db = new sqlite3.Database(dbPath, async (err) => {
@@ -123,6 +86,55 @@ async function initPrecinctsGroupingsTables() {
   })
 }
 
+async function getTargetPrecincts() {
+  const dbPath = await getDbPath()
+
+  try {
+    // Step 1: Get the target districts
+    const targetDistricts = await getTargetDistricts()
+
+    if (targetDistricts.length === 0) {
+      console.log('No target districts found.')
+      return []
+    }
+
+    return new Promise((resolve, reject) => {
+      const db = new sqlite3.Database(dbPath, (err) => {
+        if (err) {
+          console.error('Error opening database:', err.message)
+          return reject(err)
+        }
+      })
+
+      // Step 2: Find precincts for the target districts
+      const query = `
+        SELECT DISTINCT precinct
+        FROM districts
+        WHERE district IN (${targetDistricts.map(() => '?').join(',')})
+        ORDER BY precinct ASC
+      `
+
+      db.all(query, targetDistricts, (err, rows) => {
+        if (err) {
+          console.error('Error querying database:', err.message)
+          reject(err)
+        } else {
+          const precincts = rows.map((row) => row.precinct)
+          resolve(precincts)
+        }
+        db.close((err) => {
+          if (err) {
+            console.error('Error closing database:', err.message)
+          }
+        })
+      })
+    })
+  } catch (err) {
+    console.error('Error generating target precincts:', err)
+  }
+}
+
 module.exports = {
   initPrecinctsGroupingsTables,
+  getTargetPrecincts,
 }

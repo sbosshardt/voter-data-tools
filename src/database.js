@@ -1,7 +1,47 @@
 const sqlite3 = require('sqlite3').verbose()
 const path = require('path')
 const fs = require('fs')
-const loadConfig = require('./loadConfig')
+const loadConfig = require('./config')
+
+// Helper function to run db.all() as a promise
+function allAsync(db, sql, params = []) {
+  return new Promise((resolve, reject) => {
+    db.all(sql, params, (err, rows) => {
+      if (err) {
+        return reject(err)
+      }
+      resolve(rows)
+    })
+  })
+}
+
+// Helper function to run db.run() as a promise
+function runAsync(db, sql, params = []) {
+  return new Promise((resolve, reject) => {
+    db.run(sql, params, (err) => {
+      if (err) {
+        return reject(err)
+      }
+      resolve()
+    })
+  })
+}
+
+// Determine the path for the SQLite db file to use.
+async function getDbPath() {
+  const config = await loadConfig().catch((err) => {
+    console.error('Error in loadConfig:', err)
+    return
+  })
+
+  if (!config) {
+    console.error('Unable to load config.')
+    return
+  }
+
+  const dbPath = config.dbFile || 'vdt.db'
+  return dbPath
+}
 
 // Function to initialize the SQLite database
 async function initializeDatabase(dbFile = null) {
@@ -48,4 +88,9 @@ async function initializeDatabase(dbFile = null) {
   })
 }
 
-module.exports = initializeDatabase
+module.exports = {
+  allAsync,
+  getDbPath,
+  initializeDatabase,
+  runAsync,
+}

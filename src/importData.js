@@ -1,7 +1,8 @@
 const sqlite3 = require('sqlite3')
 const fs = require('fs')
 const csvParser = require('csv-parser')
-const loadConfig = require('./loadConfig')
+const loadConfig = require('./config')
+const { getDbPath } = require('./database')
 
 async function importCsv(table, filePath = null) {
   // Load the configuration
@@ -31,7 +32,7 @@ async function importCsv(table, filePath = null) {
   const delimiter = tableConfig.delimiter || ',' // Default to comma if not specified
 
   // Open the SQLite database
-  const dbPath = config.dbFile || 'vdt.db'
+  const dbPath = await getDbPath()
   const db = new sqlite3.Database(dbPath, (err) => {
     if (err) {
       console.error('Error opening database:', err.message)

@@ -58,4 +58,6 @@ async function generateSampleCsv(inputCsv, outputCsv, numRows) {
   }
 }
 
-module.exports = generateSampleCsv
+module.exports = {
+  generateSampleCsv,
+}

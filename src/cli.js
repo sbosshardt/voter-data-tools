@@ -1,18 +1,16 @@
-const generateSampleCsv = require('./generateSampleCsv')
-const initializeDatabase = require('./database')
-const { initPrecinctsGroupingsTables } = require('./precinctGroupings')
+const { generateSampleCsv } = require('./sampleCsv')
+const { initializeDatabase } = require('./database')
+const {
+  initPrecinctsGroupingsTables,
+  getTargetPrecincts,
+} = require('./precincts')
+const { getPrecinctDistricts, getTargetDistricts } = require('./districts')
 const {
   importCandidatesCsv,
   importDistrictsCsv,
   importVotersCsv,
 } = require('./importData')
-const {
-  getPrecinctDistricts,
-  getTargetDistricts,
-  getTargetPrecincts,
-  generateTextMessages,
-  generateRecipientsLists,
-} = require('./generateMessages')
+const { generateTextMessages, generateRecipientsLists } = require('./messages')
 const path = require('path')
 
 function showHelp() {
