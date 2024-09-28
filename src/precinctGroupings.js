@@ -1,5 +1,8 @@
 const sqlite3 = require('sqlite3')
-const { getPrecinctDistricts } = require('./generateMessages')
+const {
+  getPrecinctDistricts,
+  getTargetDistricts,
+} = require('./generateMessages')
 const { getGroupingHash } = require('./utils')
 const loadConfig = require('./loadConfig')
 
@@ -48,46 +51,55 @@ async function initPrecinctsGroupingsTables() {
       }
 
       try {
-        // Step 1: Drop and recreate the precincts and groupings tables
-        await runAsync(db, `DROP TABLE IF EXISTS precincts`)
+        // Step 1: Drop and recreate the target_precincts and target_groupings tables
+        await runAsync(db, `DROP TABLE IF EXISTS target_precincts`)
         await runAsync(
           db,
-          `CREATE TABLE precincts (precinct TEXT PRIMARY KEY, grouping_hash TEXT)`,
+          `CREATE TABLE target_precincts (precinct TEXT PRIMARY KEY, grouping_hash TEXT)`,
         )
 
-        await runAsync(db, `DROP TABLE IF EXISTS groupings`)
+        await runAsync(db, `DROP TABLE IF EXISTS target_groupings`)
         await runAsync(
           db,
-          `CREATE TABLE groupings (grouping_hash TEXT PRIMARY KEY, districts_json TEXT)`,
+          `CREATE TABLE target_groupings (grouping_hash TEXT PRIMARY KEY, districts_json TEXT)`,
         )
-
+        const targetDistricts = await getTargetDistricts()
+        const candidateDistricts = await getTargetDistricts(true)
         // Step 2: Get all distinct precincts from the districts table
         const precincts = await allAsync(
           db,
-          `SELECT DISTINCT precinct FROM districts`,
+          `SELECT DISTINCT precinct
+           FROM districts
+           WHERE district IN (${targetDistricts.map(() => '?').join(',')})
+           ORDER BY precinct ASC`,
+          targetDistricts,
         )
 
         // Step 3: Insert into precincts and groupings tables
         const insertPromises = precincts.map(async (row) => {
           const precinct = row.precinct
           const districts = await getPrecinctDistricts(precinct)
+          // Filter the districts based on what there are candidates for...
+          const precinctCandidateDistricts = districts.filter((district) =>
+            candidateDistricts.includes(district),
+          )
 
-          // Generate grouping hash and districts JSON
-          const districtsJson = JSON.stringify(districts)
-          const groupingHash = getGroupingHash(districtsJson)
+          // Generate grouping hash and precinctCandidateDistricts JSON
+          const ptDistrictsJson = JSON.stringify(precinctCandidateDistricts)
+          const groupingHash = getGroupingHash(ptDistrictsJson)
 
-          // Insert into precincts table
+          // Insert into target_precincts table
           await runAsync(
             db,
-            `INSERT INTO precincts (precinct, grouping_hash) VALUES (?, ?)`,
+            `INSERT INTO target_precincts (precinct, grouping_hash) VALUES (?, ?)`,
             [precinct, groupingHash],
           )
 
-          // Insert into groupings table
+          // Insert into target_groupings table
           await runAsync(
             db,
-            `INSERT OR IGNORE INTO groupings (grouping_hash, districts_json) VALUES (?, ?)`,
-            [groupingHash, districtsJson],
+            `INSERT OR IGNORE INTO target_groupings (grouping_hash, districts_json) VALUES (?, ?)`,
+            [groupingHash, ptDistrictsJson],
           )
         })
 

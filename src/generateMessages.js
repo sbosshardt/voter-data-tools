@@ -46,7 +46,7 @@ async function getPrecinctDistricts(precinct) {
   })
 }
 
-async function getTargetDistricts() {
+async function getTargetDistricts(includeNonTriggers = false) {
   const config = await loadConfig().catch((err) => {
     console.error('Error in loadConfig:', err)
     return
@@ -67,12 +67,15 @@ async function getTargetDistricts() {
       }
     })
 
+    const trig_sql_condition = includeNonTriggers
+      ? ''
+      : 'AND triggers_precinct = 1'
     // Define the query to get the distinct districts
     const query = `
       SELECT DISTINCT district
       FROM candidates
       WHERE unopposed = 0
-      AND triggers_precinct = 1
+      ${trig_sql_condition}
       ORDER BY district ASC
     `
 
