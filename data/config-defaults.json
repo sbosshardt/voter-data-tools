@@ -1,6 +1,8 @@
 {
   "cfgVersion": 1,
   "dbFile": "data/vdt.db",
+  "txtTemplate": "Endorsed candidates:\n$listings\nThis is not legal advice - for legal advice, consult with your attorney, etc.",
+  "listingTemplate": "$candidate - $office\n",
   "csv_mappings": {
     "voters": {
       "csvFilePath": "data/voters.csv",
@@ -72,6 +74,10 @@
         },
         "unopposed": {
           "csv": "Unopposed",
+          "type": "INTEGER"
+        },
+        "weight": {
+          "csv": "Sort Weight",
           "type": "INTEGER"
         }
       }
