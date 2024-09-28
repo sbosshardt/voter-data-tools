@@ -1,5 +1,6 @@
 const generateSampleCsv = require('./generateSampleCsv')
 const initializeDatabase = require('./database')
+const { initPrecinctsGroupingsTables } = require('./precinctGroupings')
 const {
   importCandidatesCsv,
   importDistrictsCsv,
@@ -22,6 +23,7 @@ function showHelp() {
   Commands:
     generate-sample      Generate a sample CSV file.
     init-db [dbfile]     Initialize the database (optional dbfile parameter).
+    init-precinct-groupings   Initialize the precincts and groupings tables.
     import-districts     Import precinct districts CSV.
     import-candidates    Import candidate endorsements CSV.
     import-voters        Import voters CSV.
@@ -51,6 +53,10 @@ async function handleCommand(args) {
     case 'init-db':
       const dbFile = args[3] || null // Optional parameter for db file name
       await initializeDatabase(dbFile)
+      break
+
+    case 'init-precinct-groupings':
+      await initPrecinctsGroupingsTables()
       break
 
     case 'import-candidates':
