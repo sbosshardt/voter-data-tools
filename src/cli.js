@@ -88,7 +88,8 @@ async function handleCommand(args) {
       break
 
     case 'generate-messages':
-      await generateTextMessages()
+      const batchId = args[3] || null
+      await generateTextMessages(batchId)
       break
 
     case 'generate-recipients':

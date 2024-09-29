@@ -1,7 +1,7 @@
 const sqlite3 = require('sqlite3')
 const fs = require('fs')
 const csvParser = require('csv-parser')
-const loadConfig = require('./config')
+const { loadConfig } = require('./config')
 const { getDbPath } = require('./database')
 
 async function importCsv(table, filePath = null) {

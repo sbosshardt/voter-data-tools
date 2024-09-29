@@ -1,6 +1,10 @@
 const sqlite3 = require('sqlite3')
 const { runAsync, allAsync, getDbPath } = require('./database')
-const { getPrecinctDistricts, getTargetDistricts } = require('./districts')
+const {
+  encodeDistricts,
+  getPrecinctDistricts,
+  getTargetDistricts,
+} = require('./districts')
 const { getGroupingHash } = require('./utils')
 
 async function initPrecinctsGroupingsTables() {
@@ -48,7 +52,7 @@ async function initPrecinctsGroupingsTables() {
           )
 
           // Generate grouping hash and precinctCandidateDistricts JSON
-          const ptDistrictsJson = JSON.stringify(precinctCandidateDistricts)
+          const ptDistrictsJson = encodeDistricts(precinctCandidateDistricts)
           const groupingHash = getGroupingHash(ptDistrictsJson)
 
           // Insert into target_precincts table
@@ -134,7 +138,90 @@ async function getTargetPrecincts() {
   }
 }
 
+// Function to get precincts by grouping_hash
+async function getPrecinctsByGroupingHash(grouping_hash) {
+  const dbPath = await getDbPath()
+
+  return new Promise((resolve, reject) => {
+    const db = new sqlite3.Database(dbPath, async (err) => {
+      if (err) {
+        console.error('Error opening database:', err.message)
+        return reject(err)
+      }
+
+      try {
+        // Query the target_precincts table for the given grouping_hash
+        const query = `SELECT precinct FROM target_precincts WHERE grouping_hash = ?`
+        const precinctRows = await allAsync(db, query, [grouping_hash])
+
+        // Map the result rows to an array of precincts
+        const precincts = precinctRows.map((row) => row.precinct)
+
+        resolve(precincts)
+      } catch (err) {
+        console.error('Error querying precincts:', err)
+        reject(err)
+      } finally {
+        db.close((err) => {
+          if (err) {
+            console.error('Error closing database:', err.message)
+          }
+        })
+      }
+    })
+  })
+}
+
+// Function to get phone numbers and first names for voters in given precincts
+async function getPhoneNumbersAndNamesInPrecincts(precincts) {
+  const dbPath = await getDbPath()
+
+  return new Promise((resolve, reject) => {
+    const db = new sqlite3.Database(dbPath, async (err) => {
+      if (err) {
+        console.error('Error opening database:', err.message)
+        return reject(err)
+      }
+
+      try {
+        // Query voters table for phone numbers and first names in the given precincts
+        const placeholders = precincts.map(() => '?').join(', ')
+        const query = `
+          SELECT first_name, phone_1, phone_2 FROM voters
+          WHERE precinct IN (${placeholders})
+        `
+        const voterRows = await allAsync(db, query, precincts)
+
+        // Prepare an object with phone numbers as keys and first names as values
+        const phoneNumberMap = {}
+        voterRows.forEach((row) => {
+          // Add phone_1 and phone_2 with first_name as the value if they exist
+          if (row.phone_1 && row.phone_1.trim()) {
+            phoneNumberMap[row.phone_1.trim()] = row.first_name
+          }
+          if (row.phone_2 && row.phone_2.trim()) {
+            phoneNumberMap[row.phone_2.trim()] = row.first_name
+          }
+        })
+
+        resolve(phoneNumberMap)
+      } catch (err) {
+        console.error('Error querying phone numbers and names:', err)
+        reject(err)
+      } finally {
+        db.close((err) => {
+          if (err) {
+            console.error('Error closing database:', err.message)
+          }
+        })
+      }
+    })
+  })
+}
+
 module.exports = {
   initPrecinctsGroupingsTables,
+  getPrecinctsByGroupingHash,
+  getPhoneNumbersAndNamesInPrecincts,
   getTargetPrecincts,
 }

@@ -64,4 +64,6 @@ async function loadConfig() {
   return config
 }
 
-module.exports = loadConfig
+module.exports = {
+  loadConfig,
+}

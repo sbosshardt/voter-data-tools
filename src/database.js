@@ -1,7 +1,7 @@
 const sqlite3 = require('sqlite3').verbose()
 const path = require('path')
 const fs = require('fs')
-const loadConfig = require('./config')
+const { loadConfig } = require('./config')
 
 // Helper function to run db.all() as a promise
 function allAsync(db, sql, params = []) {

@@ -1,6 +1,16 @@
 const sqlite3 = require('sqlite3')
 const { getDbPath } = require('./database')
 
+// Helper function to decode districts from JSON
+function decodeDistricts(districtsJson) {
+  return JSON.parse(districtsJson)
+}
+
+// Helper function to encode districts to JSON
+function encodeDistricts(districts) {
+  return JSON.stringify(districts)
+}
+
 async function getPrecinctDistricts(precinct) {
   const dbPath = await getDbPath()
 
@@ -78,6 +88,8 @@ async function getTargetDistricts(includeNonTriggers = false) {
 }
 
 module.exports = {
+  decodeDistricts,
+  encodeDistricts,
   getPrecinctDistricts,
   getTargetDistricts,
 }
