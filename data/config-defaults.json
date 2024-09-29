@@ -1,7 +1,7 @@
 {
   "cfgVersion": 1,
   "dbFile": "data/vdt.db",
-  "txtTemplate": "Endorsed candidates:\n$listings\nThis is not legal advice - for legal advice, consult with your attorney, etc.",
+  "txtTemplate": "Endorsed candidates:\n$listings\nFor more info, see our website.",
   "listingTemplate": "$candidate - $office\n",
   "csv_mappings": {
     "voters": {
