@@ -6,8 +6,11 @@ const {
 const { getCandidatesForDistricts } = require('./candidates')
 const { decodeDistricts } = require('./districts')
 const { getDbPath, allAsync, runAsync } = require('./database')
-const { capitalizeName } = require('./utils')
+const { capitalizeName, escapeCsvField } = require('./utils')
 const { loadConfig } = require('./config')
+const fs = require('fs')
+const path = require('path')
+const { EOL } = require('os')
 
 // Function to initialize the text_messages table
 async function initTextMessagesTable() {
@@ -150,14 +153,82 @@ async function generateTextMessages(batch_id = '') {
   })
 }
 
-async function generateRecipientsLists() {
-  console.log(
-    'Recipients lists generation functionality is under construction.',
-  )
+// Function to export messages to a CSV file
+async function exportMessagesCsv(outputCsvDir = null) {
+  const config = await loadConfig()
+  const dbPath = await getDbPath()
+
+  // Use the default export file path from the config if no parameter is passed
+  const exportFile =
+    (outputCsvDir || config.textMessagesDefaultExportDir || 'data/export') +
+    '/text_messages.csv'
+
+  // Ensure the output directory exists
+  const outputDir = path.dirname(exportFile)
+  if (!fs.existsSync(outputDir)) {
+    fs.mkdirSync(outputDir, { recursive: true })
+  }
+
+  return new Promise((resolve, reject) => {
+    const db = new sqlite3.Database(dbPath, async (err) => {
+      if (err) {
+        console.error('Error opening database:', err.message)
+        return reject(err)
+      }
+
+      try {
+        // Query the entire text_messages table
+        const query = 'SELECT * FROM text_messages'
+        const messages = await allAsync(db, query)
+
+        // Prepare the CSV header
+        const csvHeader =
+          'batch_id,grouping_hash,body,precincts,recipients' + EOL
+
+        // Create the CSV file and write the header
+        fs.writeFileSync(exportFile, csvHeader)
+
+        // Loop through the messages and write each row to the CSV file
+        messages.forEach((message) => {
+          //console.log('message.recipients is', message.recipients)
+          let numRecipients = (
+            message.recipients.split(/,/).length - 1
+          ).toString()
+          //console.log('numRecipients is ', numRecipients)
+          const csvRow =
+            [
+              escapeCsvField(message.batch_id),
+              escapeCsvField(message.grouping_hash),
+              escapeCsvField(message.body),
+              escapeCsvField(message.precincts),
+              escapeCsvField(numRecipients),
+            ].join(',') + EOL
+
+          fs.appendFileSync(exportFile, csvRow)
+
+          const exportRecipientsFile =
+            outputDir + '/recipients-' + message.grouping_hash + '.csv'
+          fs.writeFileSync(exportRecipientsFile, message.recipients)
+        })
+
+        console.log(`Messages exported successfully to ${outputDir}`)
+        resolve()
+      } catch (err) {
+        console.error('Error exporting messages:', err)
+        reject(err)
+      } finally {
+        db.close((err) => {
+          if (err) {
+            console.error('Error closing database:', err.message)
+          }
+        })
+      }
+    })
+  })
 }
 
 module.exports = {
   generateTextMessages,
-  generateRecipientsLists,
+  exportMessagesCsv,
   initTextMessagesTable,
 }

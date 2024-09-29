@@ -5,6 +5,17 @@ function capitalizeName(name) {
   return name.charAt(0).toUpperCase() + name.slice(1).toLowerCase()
 }
 
+// Helper function to escape CSV fields properly
+function escapeCsvField(field) {
+  if (
+    field &&
+    (field.includes(',') || field.includes('\n') || field.includes('"'))
+  ) {
+    return `"${field.replace(/"/g, '""')}"`
+  }
+  return field
+}
+
 function getHash(data) {
   return crypto.createHash('sha256').update(data).digest('hex')
 }
@@ -17,6 +28,7 @@ function getGroupingHash(data) {
 
 module.exports = {
   capitalizeName,
+  escapeCsvField,
   getGroupingHash,
   getHash,
 }

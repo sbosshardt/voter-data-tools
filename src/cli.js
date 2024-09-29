@@ -10,7 +10,7 @@ const {
   importDistrictsCsv,
   importVotersCsv,
 } = require('./importData')
-const { generateTextMessages, generateRecipientsLists } = require('./messages')
+const { generateTextMessages, exportMessagesCsv } = require('./messages')
 const path = require('path')
 
 function showHelp() {
@@ -28,7 +28,7 @@ function showHelp() {
     target-precincts     Get the precincts to be targeted.
     generate-groupings   Generate the target_precincts and target_groupings tables.
     generate-messages    Generate text messages.
-    generate-recipients  Generate recipients lists.
+    export-messages-csv [OUTPUT DIR]   Export the generated text messages and recipients info to CSV files.
     
   Options:
     --help               Show this help message.
@@ -92,8 +92,9 @@ async function handleCommand(args) {
       await generateTextMessages(batchId)
       break
 
-    case 'generate-recipients':
-      await generateRecipientsLists()
+    case 'export-messages-csv':
+      const exportCsvDir = args[3] || null
+      await exportMessagesCsv(exportCsvDir)
       break
 
     case '--help':

@@ -3,6 +3,7 @@
   "dbFile": "data/vdt.db",
   "txtTemplate": "Endorsed candidates:\n$listings\nFor more info, see our website.",
   "listingTemplate": "$candidate - $office\n",
+  "textMessagesDefaultExportDir": "data/export",
   "csv_mappings": {
     "voters": {
       "csvFilePath": "data/voters.csv",
