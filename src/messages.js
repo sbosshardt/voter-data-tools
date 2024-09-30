@@ -35,6 +35,9 @@ async function initTextMessagesTable() {
             grouping_hash TEXT,
             body TEXT,
             precincts TEXT,
+            num_candidates INTEGER,
+            num_recipients INTEGER,
+            candidates TEXT,
             recipients TEXT
           )
         `
@@ -109,6 +112,8 @@ async function generateTextMessages(batch_id = '') {
               .replace('$candidate', candidate)
               .replace('$office', office)
           })
+          const sCandidates = await JSON.stringify(candidates)
+          const numCandidates = Object.keys(candidates).length
 
           // Assuming precincts and recipients will be generated/populated later (currently placeholders)
           const precincts = await getPrecinctsByGroupingHash(grouping_hash)
@@ -122,6 +127,7 @@ async function generateTextMessages(batch_id = '') {
             const adjustedName = capitalizeName(name)
             csvString += `${phone},${adjustedName}\n`
           }
+          const numRecipients = Object.keys(phones_names).length
 
           // Build the message body using txtTemplate
           const body = txtTemplate.replace('$listings', listings)
@@ -129,8 +135,17 @@ async function generateTextMessages(batch_id = '') {
           // Insert the generated message into the text_messages table
           await runAsync(
             db,
-            `INSERT INTO text_messages (batch_id, grouping_hash, body, precincts, recipients) VALUES (?, ?, ?, ?, ?)`,
-            [batch_id, grouping_hash, body, sPrecincts, csvString],
+            `INSERT INTO text_messages (batch_id, grouping_hash, body, precincts, num_candidates, num_recipients, candidates, recipients) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+            [
+              batch_id,
+              grouping_hash,
+              body,
+              sPrecincts,
+              numCandidates,
+              numRecipients,
+              sCandidates,
+              csvString,
+            ],
           )
         })
 
@@ -183,7 +198,8 @@ async function exportMessagesCsv(outputCsvDir = null) {
 
         // Prepare the CSV header
         const csvHeader =
-          'batch_id,grouping_hash,body,precincts,recipients' + EOL
+          'batch_id,grouping_hash,body,precincts,num_candidates,num_recipients,candidates' +
+          EOL
 
         // Create the CSV file and write the header
         fs.writeFileSync(exportFile, csvHeader)
@@ -201,7 +217,9 @@ async function exportMessagesCsv(outputCsvDir = null) {
               escapeCsvField(message.grouping_hash),
               escapeCsvField(message.body),
               escapeCsvField(message.precincts),
+              escapeCsvField(message.num_candidates),
               escapeCsvField(numRecipients),
+              escapeCsvField(message.candidates),
             ].join(',') + EOL
 
           fs.appendFileSync(exportFile, csvRow)

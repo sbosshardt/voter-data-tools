@@ -7,6 +7,9 @@ function capitalizeName(name) {
 
 // Helper function to escape CSV fields properly
 function escapeCsvField(field) {
+  if (typeof field === 'number') {
+    return field
+  }
   if (
     field &&
     (field.includes(',') || field.includes('\n') || field.includes('"'))
@@ -22,7 +25,7 @@ function getHash(data) {
 
 function getGroupingHash(data) {
   const fullHash = getHash(data)
-  const shortHash = fullHash.substring(0, 6)
+  const shortHash = fullHash.substring(0, 4).toUpperCase()
   return shortHash
 }
 
