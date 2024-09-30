@@ -1,5 +1,8 @@
 const crypto = require('crypto')
+const path = require('path')
 const { loadConfig } = require('./config')
+
+const fs = require('fs')
 
 // Helper function to capitalize the first letter and make the rest lowercase
 function capitalizeName(name) {
@@ -8,7 +11,10 @@ function capitalizeName(name) {
 
 // Helper function to escape CSV fields properly
 function escapeCsvField(field) {
-  if (typeof field === 'number') {
+  if (field === null) {
+    return ''
+  }
+  if (typeof field === 'number' || field === '') {
     return field
   }
   if (
@@ -30,8 +36,7 @@ function getGroupingHash(data) {
   return shortHash
 }
 
-// Helper function to get SQL conditions for filtering voters.
-async function getCostPerRecipient() {
+async function getConfigValue(var_name, default_value = null) {
   // Load the configuration
   const config = await loadConfig().catch((err) => {
     console.error('Error in loadConfig:', err)
@@ -43,12 +48,35 @@ async function getCostPerRecipient() {
     return
   }
 
-  return config.costPerRecipient || 0
+  return config[var_name] || default_value
+}
+
+// Helper function to get SQL conditions for filtering voters.
+async function getCostPerRecipient() {
+  const cost = await getConfigValue('costPerRecipient')
+  return cost || 0
+}
+
+async function getCsvOutputDir(outputCsvDir = null) {
+  const config = await loadConfig()
+  const exportFile =
+    (outputCsvDir || config.textMessagesDefaultExportDir || 'data/export') +
+    '/text_messages.csv'
+
+  // Ensure the output directory exists
+  const outputDir = path.dirname(exportFile)
+  if (!fs.existsSync(outputDir)) {
+    fs.mkdirSync(outputDir, { recursive: true })
+  }
+  return outputDir
 }
 
 module.exports = {
   capitalizeName,
   escapeCsvField,
+  getConfigValue,
+  getCostPerRecipient,
+  getCsvOutputDir,
   getGroupingHash,
   getHash,
 }

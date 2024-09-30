@@ -108,7 +108,8 @@ async function handleCommand(args) {
       break
 
     case 'candidate-expenditures':
-      getCandidatesExpenditures()
+      const exps = await getCandidatesExpenditures()
+      console.log(exps)
       break
 
     case 'run-all':

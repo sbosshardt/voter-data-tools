@@ -5,6 +5,8 @@
   "listingTemplate": "$candidate - $office\n",
   "textMessagesDefaultExportDir": "data/export",
   "votersExtraQueryConditions": "party = 'REP'",
+  "costDecimalPlaces": 2,
+  "costPerRecipient": 0,
   "csv_mappings": {
     "voters": {
       "csvFilePath": "data/voters.csv",

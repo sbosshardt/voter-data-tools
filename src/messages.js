@@ -5,8 +5,14 @@ const {
 } = require('./precincts')
 const { getCandidatesForDistricts } = require('./candidates')
 const { decodeDistricts } = require('./districts')
+const { exportCandidatesExpendituresCsv } = require('./expenditures')
 const { getDbPath, allAsync, runAsync } = require('./database')
-const { capitalizeName, escapeCsvField } = require('./utils')
+const {
+  capitalizeName,
+  escapeCsvField,
+  getCostPerRecipient,
+  getCsvOutputDir,
+} = require('./utils')
 const { loadConfig } = require('./config')
 const fs = require('fs')
 const path = require('path')
@@ -215,17 +221,8 @@ async function getTextMessages() {
 
 // Function to export messages to a CSV file
 async function exportMessagesCsv(outputCsvDir = null) {
-  const config = await loadConfig()
-  const exportFile =
-    (outputCsvDir || config.textMessagesDefaultExportDir || 'data/export') +
-    '/text_messages.csv'
-
-  // Ensure the output directory exists
-  const outputDir = path.dirname(exportFile)
-  if (!fs.existsSync(outputDir)) {
-    fs.mkdirSync(outputDir, { recursive: true })
-  }
-
+  const oDir = await getCsvOutputDir(outputCsvDir)
+  const exportFile = oDir + '/text_messages.csv'
   try {
     // Get all messages from the database
     const messages = await getTextMessages()
@@ -263,13 +260,15 @@ async function exportMessagesCsv(outputCsvDir = null) {
 
       // Export recipients to individual CSV files
       const exportRecipientsFile =
-        outputDir + '/recipients-' + message.grouping_hash + '.csv'
+        oDir + '/recipients-' + message.grouping_hash + '.csv'
       fs.writeFileSync(exportRecipientsFile, message.recipients)
     })
 
-    console.log(`Messages exported successfully to ${outputDir}`)
+    console.log(`Messages exported successfully to ${oDir}`)
+    exportCandidatesExpendituresCsv(outputCsvDir)
   } catch (err) {
     console.error('Error exporting messages:', err.message)
+    console.log(err)
   }
 }
 
