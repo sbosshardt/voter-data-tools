@@ -14,24 +14,31 @@ const { generateTextMessages, exportMessagesCsv } = require('./messages')
 const path = require('path')
 
 function showHelp() {
+  const hasIndex = process.argv[1].indexOf('index') >= 0
+  // Determine how the program was invoked
+  const invokedAs =
+    process.argv[0].includes('node') && hasIndex
+      ? `node ${path.basename(process.argv[1])}` // Show 'node index.js'
+      : `./${path.basename(process.argv[1])}` // Show './vdt'
+
   console.log(`
-  Usage: node index.js [command] [options]
+  Usage: ${invokedAs} [command] [options]
 
   Commands:
-    generate-sample      Generate a sample CSV file.
-    init-db [dbfile]     Initialize the database (optional dbfile parameter).
-    import-districts     Import precinct districts CSV.
-    import-candidates    Import candidate endorsements CSV.
-    import-voters        Import voters CSV.
+    generate-sample                 Generate a sample CSV file.
+    init-db [dbfile]                Initialize the database (optional dbfile parameter).
+    import-districts                Import precinct districts CSV.
+    import-candidates               Import candidate endorsements CSV.
+    import-voters                   Import voters CSV.
     precinct-districts <precinct>   Get districts a precinct is a part of.
-    target-districts     Get target districts (based on candidates table).
-    target-precincts     Get the precincts to be targeted.
-    generate-groupings   Generate the target_precincts and target_groupings tables.
-    generate-messages    Generate text messages.
-    export-messages-csv [OUTPUT DIR]   Export the generated text messages and recipients info to CSV files.
+    target-districts                Get target districts (based on candidates table).
+    target-precincts                Get the precincts to be targeted.
+    generate-groupings              Generate the target_precincts and target_groupings tables.
+    generate-messages               Generate text messages.
+    export-messages-csv [directory] Export the generated text messages and recipients info to CSV files.
     
   Options:
-    --help               Show this help message.
+    --help                          Show this help message.
   `)
 }
 
