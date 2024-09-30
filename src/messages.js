@@ -168,21 +168,10 @@ async function generateTextMessages(batch_id = '') {
   })
 }
 
-// Function to export messages to a CSV file
-async function exportMessagesCsv(outputCsvDir = null) {
-  const config = await loadConfig()
+// Function to retrieve all messages from the database
+async function getTextMessages() {
   const dbPath = await getDbPath()
-
-  // Use the default export file path from the config if no parameter is passed
-  const exportFile =
-    (outputCsvDir || config.textMessagesDefaultExportDir || 'data/export') +
-    '/text_messages.csv'
-
-  // Ensure the output directory exists
-  const outputDir = path.dirname(exportFile)
-  if (!fs.existsSync(outputDir)) {
-    fs.mkdirSync(outputDir, { recursive: true })
-  }
+  const query = 'SELECT * FROM text_messages'
 
   return new Promise((resolve, reject) => {
     const db = new sqlite3.Database(dbPath, async (err) => {
@@ -192,47 +181,11 @@ async function exportMessagesCsv(outputCsvDir = null) {
       }
 
       try {
-        // Query the entire text_messages table
-        const query = 'SELECT * FROM text_messages'
+        // Fetch all messages from the text_messages table
         const messages = await allAsync(db, query)
-
-        // Prepare the CSV header
-        const csvHeader =
-          'batch_id,grouping_hash,body,precincts,num_candidates,num_recipients,candidates' +
-          EOL
-
-        // Create the CSV file and write the header
-        fs.writeFileSync(exportFile, csvHeader)
-
-        // Loop through the messages and write each row to the CSV file
-        messages.forEach((message) => {
-          //console.log('message.recipients is', message.recipients)
-          let numRecipients = (
-            message.recipients.split(/,/).length - 1
-          ).toString()
-          //console.log('numRecipients is ', numRecipients)
-          const csvRow =
-            [
-              escapeCsvField(message.batch_id),
-              escapeCsvField(message.grouping_hash),
-              escapeCsvField(message.body),
-              escapeCsvField(message.precincts),
-              escapeCsvField(message.num_candidates),
-              escapeCsvField(numRecipients),
-              escapeCsvField(message.candidates),
-            ].join(',') + EOL
-
-          fs.appendFileSync(exportFile, csvRow)
-
-          const exportRecipientsFile =
-            outputDir + '/recipients-' + message.grouping_hash + '.csv'
-          fs.writeFileSync(exportRecipientsFile, message.recipients)
-        })
-
-        console.log(`Messages exported successfully to ${outputDir}`)
-        resolve()
+        resolve(messages)
       } catch (err) {
-        console.error('Error exporting messages:', err)
+        console.error('Error retrieving messages:', err.message)
         reject(err)
       } finally {
         db.close((err) => {
@@ -245,7 +198,65 @@ async function exportMessagesCsv(outputCsvDir = null) {
   })
 }
 
+// Function to export messages to a CSV file
+async function exportMessagesCsv(outputCsvDir = null) {
+  const config = await loadConfig()
+  const exportFile =
+    (outputCsvDir || config.textMessagesDefaultExportDir || 'data/export') +
+    '/text_messages.csv'
+
+  // Ensure the output directory exists
+  const outputDir = path.dirname(exportFile)
+  if (!fs.existsSync(outputDir)) {
+    fs.mkdirSync(outputDir, { recursive: true })
+  }
+
+  try {
+    // Get all messages from the database
+    const messages = await getTextMessages()
+
+    // Prepare the CSV header
+    const csvHeader =
+      'batch_id,grouping_hash,body,precincts,num_candidates,num_recipients,candidates' +
+      EOL
+
+    // Create the CSV file and write the header
+    fs.writeFileSync(exportFile, csvHeader)
+
+    // Loop through the messages and write each row to the CSV file
+    messages.forEach((message) => {
+      const numRecipients = message.recipients
+        ? message.recipients.split(/,/).length.toString()
+        : '0'
+
+      const csvRow =
+        [
+          escapeCsvField(message.batch_id),
+          escapeCsvField(message.grouping_hash),
+          escapeCsvField(message.body),
+          escapeCsvField(message.precincts),
+          escapeCsvField(message.num_candidates),
+          escapeCsvField(numRecipients),
+          escapeCsvField(message.candidates),
+        ].join(',') + EOL
+
+      // Write the message data to the CSV file
+      fs.appendFileSync(exportFile, csvRow)
+
+      // Export recipients to individual CSV files
+      const exportRecipientsFile =
+        outputDir + '/recipients-' + message.grouping_hash + '.csv'
+      fs.writeFileSync(exportRecipientsFile, message.recipients)
+    })
+
+    console.log(`Messages exported successfully to ${outputDir}`)
+  } catch (err) {
+    console.error('Error exporting messages:', err.message)
+  }
+}
+
 module.exports = {
+  getTextMessages,
   generateTextMessages,
   exportMessagesCsv,
   initTextMessagesTable,
