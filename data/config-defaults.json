@@ -4,6 +4,7 @@
   "txtTemplate": "Endorsed candidates:\n$listings\nFor more info, see our website.",
   "listingTemplate": "$candidate - $office\n",
   "textMessagesDefaultExportDir": "data/export",
+  "votersExtraQueryConditions": "party = 'REP'",
   "csv_mappings": {
     "voters": {
       "csvFilePath": "data/voters.csv",
@@ -12,6 +13,10 @@
         "voter_id": {
           "csv": "voter_id",
           "type": "INTEGER"
+        },
+        "party": {
+          "csv": "party",
+          "type": "TEXT"
         },
         "first_name": {
           "csv": "name_first",

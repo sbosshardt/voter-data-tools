@@ -6,6 +6,7 @@ const {
   getTargetDistricts,
 } = require('./districts')
 const { getGroupingHash } = require('./utils')
+const { loadConfig } = require('./config')
 
 async function initPrecinctsGroupingsTables() {
   const dbPath = await getDbPath()
@@ -172,6 +173,22 @@ async function getPrecinctsByGroupingHash(grouping_hash) {
   })
 }
 
+// Helper function to get SQL conditions for filtering voters.
+async function getExtraSqlConditionsForVoters() {
+  // Load the configuration
+  const config = await loadConfig().catch((err) => {
+    console.error('Error in loadConfig:', err)
+    return
+  })
+
+  if (!config) {
+    console.error('Unable to load config.')
+    return
+  }
+
+  return config.votersExtraQueryConditions || ''
+}
+
 // Function to get phone numbers and first names for voters in given precincts
 async function getPhoneNumbersAndNamesInPrecincts(precincts) {
   const dbPath = await getDbPath()
@@ -186,10 +203,15 @@ async function getPhoneNumbersAndNamesInPrecincts(precincts) {
       try {
         // Query voters table for phone numbers and first names in the given precincts
         const placeholders = precincts.map(() => '?').join(', ')
-        const query = `
+        let extraConditions = await getExtraSqlConditionsForVoters()
+        if (extraConditions.length) {
+          extraConditions = 'AND ' + extraConditions
+        }
+        const query =
+          `
           SELECT first_name, phone_1, phone_2 FROM voters
           WHERE precinct IN (${placeholders})
-        `
+        ` + extraConditions
         const voterRows = await allAsync(db, query, precincts)
 
         // Prepare an object with phone numbers as keys and first names as values
