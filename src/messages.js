@@ -37,6 +37,9 @@ async function initTextMessagesTable() {
             precincts TEXT,
             num_candidates INTEGER,
             num_recipients INTEGER,
+            cost_per_recipient REAL,
+            total_cost REAL,
+            cost_per_candidate REAL,
             candidates TEXT,
             recipients TEXT
           )
@@ -95,6 +98,8 @@ async function generateTextMessages(batch_id = '') {
           'SELECT grouping_hash, districts_json FROM target_groupings',
         )
 
+        const costPerRecipient = await getCostPerRecipient()
+
         // Step 5: Loop through each grouping to generate a message
         const insertPromises = groupings.map(async (grouping) => {
           const { grouping_hash, districts_json } = grouping
@@ -128,6 +133,8 @@ async function generateTextMessages(batch_id = '') {
             csvString += `${phone},${adjustedName}\n`
           }
           const numRecipients = Object.keys(phones_names).length
+          const totalCost = costPerRecipient * numRecipients
+          const costPerCandidate = totalCost / numCandidates
 
           // Build the message body using txtTemplate
           const body = txtTemplate.replace('$listings', listings)
@@ -135,7 +142,12 @@ async function generateTextMessages(batch_id = '') {
           // Insert the generated message into the text_messages table
           await runAsync(
             db,
-            `INSERT INTO text_messages (batch_id, grouping_hash, body, precincts, num_candidates, num_recipients, candidates, recipients) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+            `INSERT INTO text_messages
+            (batch_id, grouping_hash, body, precincts,
+             num_candidates, num_recipients,
+             cost_per_recipient, total_cost, cost_per_candidate,
+             candidates, recipients)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
             [
               batch_id,
               grouping_hash,
@@ -143,6 +155,9 @@ async function generateTextMessages(batch_id = '') {
               sPrecincts,
               numCandidates,
               numRecipients,
+              costPerRecipient,
+              totalCost,
+              costPerCandidate,
               sCandidates,
               csvString,
             ],
@@ -217,7 +232,7 @@ async function exportMessagesCsv(outputCsvDir = null) {
 
     // Prepare the CSV header
     const csvHeader =
-      'batch_id,grouping_hash,body,precincts,num_candidates,num_recipients,candidates' +
+      'batch_id,grouping_hash,body,precincts,num_candidates,num_recipients,cost_per_recipient,total_cost,cost_per_candidate,candidates' +
       EOL
 
     // Create the CSV file and write the header
@@ -237,6 +252,9 @@ async function exportMessagesCsv(outputCsvDir = null) {
           escapeCsvField(message.precincts),
           escapeCsvField(message.num_candidates),
           escapeCsvField(numRecipients),
+          escapeCsvField(message.cost_per_recipient),
+          escapeCsvField(message.total_cost),
+          escapeCsvField(message.cost_per_candidate),
           escapeCsvField(message.candidates),
         ].join(',') + EOL
 
@@ -256,8 +274,8 @@ async function exportMessagesCsv(outputCsvDir = null) {
 }
 
 module.exports = {
-  getTextMessages,
   generateTextMessages,
   exportMessagesCsv,
   initTextMessagesTable,
+  getTextMessages,
 }

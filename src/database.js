@@ -80,7 +80,7 @@ async function initializeDatabase(dbFile = null) {
   })
 
   // Close the database connection
-  db.close((err) => {
+  await db.close((err) => {
     if (err) {
       return console.error('Error closing the database:', err.message)
     }

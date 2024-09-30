@@ -11,6 +11,7 @@ const {
   importVotersCsv,
 } = require('./importData')
 const { generateTextMessages, exportMessagesCsv } = require('./messages')
+const { getCandidatesExpenditures } = require('./expenditures')
 const path = require('path')
 
 function showHelp() {
@@ -25,6 +26,7 @@ function showHelp() {
   Usage: ${invokedAs} [command] [options]
 
   Commands:
+    run-all                         Import tables, generate groupings & texts, export.
     generate-sample                 Generate a sample CSV file.
     init-db [dbfile]                Initialize the database (optional dbfile parameter).
     import-districts                Import precinct districts CSV.
@@ -36,6 +38,7 @@ function showHelp() {
     generate-groupings              Generate the target_precincts and target_groupings tables.
     generate-messages               Generate text messages.
     export-messages-csv [directory] Export the generated text messages and recipients info to CSV files.
+    candidate-expenditures          Show the expenditures for the candidates.
     
   Options:
     --help                          Show this help message.
@@ -102,6 +105,20 @@ async function handleCommand(args) {
     case 'export-messages-csv':
       const exportCsvDir = args[3] || null
       await exportMessagesCsv(exportCsvDir)
+      break
+
+    case 'candidate-expenditures':
+      getCandidatesExpenditures()
+      break
+
+    case 'run-all':
+      await initializeDatabase(null)
+      await importVotersCsv()
+      await importCandidatesCsv()
+      await importDistrictsCsv()
+      await initPrecinctsGroupingsTables()
+      await generateTextMessages(null)
+      await exportMessagesCsv(null)
       break
 
     case '--help':
