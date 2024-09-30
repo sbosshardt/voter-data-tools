@@ -131,6 +131,7 @@ async function generateTextMessages(batch_id = '') {
           const sPrecincts = precincts.join('\n')
           const phones_names =
             await getPhoneNumbersAndNamesInPrecincts(precincts)
+          console.log('phones_names:', phones_names)
           // Start with the CSV header
           let csvString = 'phone,name\n'
           // Loop through the object and append each phone and name as a new row
@@ -139,8 +140,9 @@ async function generateTextMessages(batch_id = '') {
             csvString += `${phone},${adjustedName}\n`
           }
           const numRecipients = Object.keys(phones_names).length
+          console.log('numRecipients:', numRecipients)
           const totalCost = costPerRecipient * numRecipients
-          const costPerCandidate = totalCost / numCandidates
+          const costPerCandidate = (1.0 * totalCost) / numCandidates
 
           // Build the message body using txtTemplate
           const body = txtTemplate.replace('$listings', listings)
@@ -237,10 +239,6 @@ async function exportMessagesCsv(outputCsvDir = null) {
 
     // Loop through the messages and write each row to the CSV file
     messages.forEach((message) => {
-      const numRecipients = message.recipients
-        ? message.recipients.split(/,/).length.toString()
-        : '0'
-
       const csvRow =
         [
           escapeCsvField(message.batch_id),
@@ -248,7 +246,7 @@ async function exportMessagesCsv(outputCsvDir = null) {
           escapeCsvField(message.body),
           escapeCsvField(message.precincts),
           escapeCsvField(message.num_candidates),
-          escapeCsvField(numRecipients),
+          escapeCsvField(message.num_recipients),
           escapeCsvField(message.cost_per_recipient),
           escapeCsvField(message.total_cost),
           escapeCsvField(message.cost_per_candidate),

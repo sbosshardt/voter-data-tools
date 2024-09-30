@@ -26,7 +26,7 @@ async function getCandidatesExpenditures() {
 
 async function exportCandidatesExpendituresCsv(outputCsvDir = null) {
   const oDir = await getCsvOutputDir(outputCsvDir)
-  const exportFile = oDir + '/candidates-expenditures.csv'
+  const exportFile = oDir + '/candidates_expenditures.csv'
   const cExps = await getCandidatesExpenditures()
   // Prepare the CSV header
   const csvHeader = 'name,office,total_expenditures,expenditures' + EOL
